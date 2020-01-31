@@ -1,0 +1,98 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Пример веб-страницы</title>
+</head>
+<body>
+<h1>Заголовок</h1>
+<button onclick="openConversations()">получит список диалогов vvvvvv</button><br />
+<button onclick="loadConversations()">догрузка диалогов</button><br />
+<button onclick="openConverstion()">открытие диалога</button><br />
+<button onclick="sendMessage()">отправка сообщения</button><br />
+<button onclick="editMessage()">изменить сообщение</button><br />
+<button onclick="readConverstion()">прочесть диалог</button><br />
+<button onclick="addConverstion()">создание нового диалога</button>
+</body>
+<script>
+    const socket = new WebSocket("ws://localhost:8080");
+
+    socket.onopen = () => {
+        console.log("Соединение установлено.");
+    };
+
+    socket.onclose = (event) => {
+        // тут следует реализовать механизм реконнектов
+        event.wasClean
+            ? console.log('Соединение закрыто чисто')
+            : console.log('Обрыв соединения');
+        console.log('Код: ' + event.code + ' причина: ' + event.reason);
+    };
+
+    socket.onmessage = (event) => {
+        console.log("Получены данные ",  JSON.parse(event.data));
+    };
+
+    socket.onerror = (error) => {
+        // тут следует реализовать проверку и обработку ошибок
+        console.log("Ошибка " + error.message);
+    };
+
+    socket.msg = (obj) => socket.send(JSON.stringify(obj));
+
+    const openConversations = () => socket.msg({
+        type: 'openConversations',
+        data: {
+            userId: 1, // уникальный id пользователя, который запрашивает диалоги
+            dialogsCount: 20 //количество ожидаемых объектов
+        }
+    });
+    const loadConversations = () => socket.msg({
+        type: 'loadConversations',
+        data: {
+            userId: 1, // уникальный id пользователя, который запрашивает диалоги
+            dialogsCount: 20, // количество ожидаемых объектов
+            dialogsFrom: 20 // id диалога с которого следует прислать  dialogsCount диалогов
+        }
+    });
+    const openConverstion = () => socket.msg({
+        type: 'openConverstion',
+        data: {
+            dialogId: 1, // id диалога
+            userId: 1, // id пользователя который запрашивает диалог
+            messagesCount: 20, // количество последних ожидаемых сообщений
+            messageFromId: 0 // [option, default: last]: id сообщения с которого следует прислать  messagesCount
+        }
+    });
+    const sendMessage = () => socket.msg({
+        type: 'sendMessage',
+        data: {
+            dialogId: 5, // id диалога
+            tempId: Date.now(), // временный id по которому происходит синхронизация
+            message: 'New test in 5 dialog' // Текст сообщения
+        }
+    });
+    const editMessage = () => socket.msg({
+        type: 'editMessage',
+        data: {
+            dialogId: 5, // id диалога
+            id: 23, //id сообщения
+            newMessage: 'new text second'// новый текст сообщения
+        }
+    });
+    const readConverstion = () => socket.msg({
+        type: 'readConverstion',
+        data: {
+            dialogId: 1, // id диалога
+            id: 2, //id сообщения
+        }
+    });
+    const addConverstion = () => socket.msg({
+        type: 'addConverstion',
+        data: {
+            id: 2, // id пользователя который инициирует создание
+            interlocutorId: 12   //id собеседника с которым пытаемся инициировать диалог
+        }
+    });
+</script>
+</html>

@@ -1,0 +1,18 @@
+{
+  "orm": {
+    "database": "",
+    "username": "",
+    "password": "",
+    "options": {
+      "dialect": "mysql"
+    },
+    "models": "models"
+  },
+  "ssh": {
+    "useSsh": false,
+    "cert": "path to cert",
+    "key": "path to key"
+  },
+  "port": 8080,
+  "authPath": "https://site.com/check-auth.php"
+}
