@@ -88,10 +88,10 @@ const reqHandler = new (require('./Classes/ReqHandler'))({conf, orm});
             id: 2,
             username: 'Barakuda'
         };
-//----
         ws.UUID = uuidv1();
         online[ws.user.id] = online[ws.user.id] || {};
         online[ws.user.id][ws.UUID] = ws;
+//----
 
         ws.on('message', async (message) => {
             message = JSON.parse(message);
