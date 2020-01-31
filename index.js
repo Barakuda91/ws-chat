@@ -1,6 +1,7 @@
 online = {};
 Object.assign(global, {ROOT_DIR: __dirname});
 const conf = require('nconf');
+const uuidv1 = require('uuid/v1');
 const fs = require('fs');
 const request = require('request');
 const https = require('https');
@@ -78,6 +79,7 @@ const reqHandler = new (require('./Classes/ReqHandler'))({conf, orm});
         //     ws.send(JSON.stringify({type: 'error', error: {code: 401, text: 'Unauthorized'}}));
         // } else {
         //     ws.user = JSON.parse(auth);
+        //     ws.UUID = uuidv1();
         //     online[ws.user.id] = online[ws.user.id] || {};
         //     online[ws.user.id][ws.UUID] = ws;
         // }
@@ -87,7 +89,7 @@ const reqHandler = new (require('./Classes/ReqHandler'))({conf, orm});
             username: 'Barakuda'
         };
 //----
-        ws.UUID = '103213214ds314f5c3s1' + Date.now();
+        ws.UUID = uuidv1();
         online[ws.user.id] = online[ws.user.id] || {};
         online[ws.user.id][ws.UUID] = ws;
 
