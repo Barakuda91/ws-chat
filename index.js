@@ -7,6 +7,7 @@ const request = require('request');
 const https = require('https');
 const http = require('http');
 const WebSocket = require('ws');
+const errorHandler = new (require(`${ROOT_DIR}/Classes/ErrorHandler`))({name: 'APP_server'});
 
 conf.file({ file: 'config/index.json' });
 const server = conf.get('ssh:useSsh')
@@ -95,7 +96,9 @@ const reqHandler = new (require('./Classes/ReqHandler'))({conf, orm});
 
         ws.on('message', async (message) => {
             message = JSON.parse(message);
-            ws.send(JSON.stringify(await reqHandler[message.type || 'noType'](message, ws)));
+            ws
+                .send(JSON.stringify(await reqHandler[message.type || 'noType'](message, ws)))
+                .catch(errorHandler.throwError);
         });
 
         ws.on('close', () => {
@@ -105,6 +108,6 @@ const reqHandler = new (require('./Classes/ReqHandler'))({conf, orm});
         });
     });
 
-    await server.listen(conf.get('port'));
+    await server.listen(conf.get('port')).catch(errorHandler.throwError);
     console.log(`WS server listening ${conf.get('port')} port`);
 })();

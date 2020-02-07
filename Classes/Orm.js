@@ -1,5 +1,6 @@
 const fs = require('fs-extra');
 const { Sequelize } = require('sequelize');
+const errorHandler = new (require(`${ROOT_DIR}/Classes/ErrorHandler`))({name: 'ORM'});
 
 module.exports = class Orm {
     constructor(struct) {

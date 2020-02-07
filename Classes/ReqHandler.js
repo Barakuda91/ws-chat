@@ -1,4 +1,5 @@
 const { Op } = require('sequelize');
+const errorHandler = new (require(`${ROOT_DIR}/Classes/ErrorHandler`))({name: 'ReqHandler'});
 
 module.exports = class ReqHandler {
     constructor(struct) {
@@ -25,9 +26,9 @@ module.exports = class ReqHandler {
             include: [this.orm.users],
             limit: msg.data.messagesCount || 20,
             offset: msg.data.messageFrom || 0
-        });
+        }).catch(errorHandler.sendError);
 
-        return {
+        return messages.error ? messages : {
             type: 'openConverstion',
             data: messages.map((message) => new Object({
                 id: message.dataValues.id,
@@ -47,34 +48,38 @@ module.exports = class ReqHandler {
             dialog_id: msg.data.dialogId,
             text: msg.data.message,
             updated_text: msg.data.message
-        });
+        }).catch(errorHandler.sendError);
 
-        const dialog = await this.orm.dialogs.findOne({where: {id: msg.data.dialogId}});
+        const dialog = await this.orm.dialogs
+            .findOne({where: {id: msg.data.dialogId}})
+            .catch(errorHandler.sendError);
 
-        for(const recipient of online[dialog.dataValues.recipient_id]) {
-            recipient.send({type: 'newMessage', data: {
-                    dialogId: message.dataValues.dialog_id,
-                    id: message.dataValues.id,
-                    interlocutorAvatar: this.getAvatarUrl(ws.user.username),
-                    interlocutorId: ws.user.id,
-                    interlocutor: ws.user.username,
-                    timestamp: message.dataValues.createdAt,
-                    message: message.dataValues.text
-                }});
+        if (!dialog.error && !message.error) {
+            for(const recipient of online[dialog.dataValues.recipient_id]) {
+                recipient.send({type: 'newMessage', data: {
+                        dialogId: message.dataValues.dialog_id,
+                        id: message.dataValues.id,
+                        interlocutorAvatar: this.getAvatarUrl(ws.user.username),
+                        interlocutorId: ws.user.id,
+                        interlocutor: ws.user.username,
+                        timestamp: message.dataValues.createdAt,
+                        message: message.dataValues.text
+                    }});
+            }
         }
 
-        return {type: 'sendMessage', data: {tempId: msg.data.tempId, id: message.dataValues.id}}
+        return dialog.error || message.error
+            ? {dialog, message}
+            : {type: 'sendMessage', data: {tempId: msg.data.tempId, id: message.dataValues.id}};
     }
 
     async editMessage (msg, ws) {
         const responce = await this.orm.messages.update(
             {updated_text: msg.data.newMessage},
             {where: {id: msg.data.id, user_id: ws.user.id, dialog_id: msg.data.dialogId}}
-        );
+        ).catch(errorHandler.sendError);
 
-        !!responce[0] || (msg.data.error = {text: 'not modify'});
-
-        return msg;
+        return responce.error ? responce : msg;
     }
 
     async readConverstion (msg, ws) {
@@ -86,20 +91,18 @@ module.exports = class ReqHandler {
                     dialog_id: msg.data.dialogId
                 }
             }
-        );
+        ).catch(errorHandler.sendError);
 
-        !!responce[0] || (msg.data.error = { text: 'some problem'} );
-
-        return msg;
+        return responce.error ? responce : msg;
     }
 
     async addConverstion (msg, ws) {
         const dialog = await this.orm.dialogs.insert({
             sender_id: ws.user.id,
             recipient_id: msg.data.interlocutorId
-        }).catch((e) => msg.data.error = e.message);
+        }).catch(errorHandler.sendError);
 
-        msg.data = msg.data.error ? msg.data : {dialogId: dialog.dataValues.id};
+        msg.data = dialog.error ? Object.assign(msg.data, dialog) : {dialogId: dialog.dataValues.id};
 
         return msg;
     }
@@ -117,9 +120,9 @@ module.exports = class ReqHandler {
             `GROUP BY dialog_id) AND (sender_id = ${ws.user.id} OR recipient_id = ${ws.user.id}) \n` +
             `ORDER BY messages.id DESC LIMIT ${msg.data.dialogsFrom}, ${msg.data ? msg.data.dialogsCount : 20};`;
 
-        const res = await this.orm.sequelize.query(sql);
+        const res = await this.orm.sequelize.query(sql).catch(errorHandler.sendError);
 
-        return res[0].map((dialog) => {
+        return res.error ? res : res[0].map((dialog) => {
             const recAvatar = this.getAvatarUrl(dialog.recipient_login);
             return {
                 dialogId: dialog.dialog_id,
