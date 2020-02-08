@@ -54,8 +54,12 @@ module.exports = class ReqHandler {
             .findOne({where: {id: msg.data.dialogId}})
             .catch(errorHandler.sendError);
 
-        if (!dialog.error && !message.error && online[dialog.dataValues.recipient_id]) {
-            for(const recipient of online[dialog.dataValues.recipient_id]) {
+        const partnerId = dialog.dataValues.sender_id === ws.user.id
+            ? dialog.dataValues.recipient_id
+            : dialog.dataValues.sender_id;
+
+        if (!dialog.error && !message.error && online[partnerId]) {
+            for(const recipient of online[partnerId]) {
                 recipient.send({type: 'newMessage', data: {
                         dialogId: message.dataValues.dialog_id,
                         id: message.dataValues.id,
