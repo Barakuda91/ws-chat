@@ -7,9 +7,9 @@ module.exports = class ErrorHandler {
     }
 
     sendError(err) {
-        const e = err.stack ? err.stack : err.message
+        const e = err.stack ? err.stack : err.message;
         console.error(e);
-        return e;
+        return {error: e};
     }
 
     throwError(ex) {

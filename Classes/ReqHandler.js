@@ -142,6 +142,6 @@ module.exports = class ReqHandler {
     }
 
     getAvatarUrl (login) {
-        return `/img/${login.slice(0, 1).toLowerCase()}/${login}`
+        return login ? `/img/${login.slice(0, 1).toLowerCase()}/${login}` : login;
     }
 };

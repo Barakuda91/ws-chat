@@ -96,9 +96,8 @@ const reqHandler = new (require('./Classes/ReqHandler'))({conf, orm});
 
         ws.on('message', async (message) => {
             message = JSON.parse(message);
-            ws
-                .send(JSON.stringify(await reqHandler[message.type || 'noType'](message, ws)))
-                .catch(errorHandler.throwError);
+            ws.send(JSON
+                .stringify(await reqHandler[message.type || 'noType'](message, ws).catch(errorHandler.sendError)))
         });
 
         ws.on('close', () => {
@@ -108,6 +107,6 @@ const reqHandler = new (require('./Classes/ReqHandler'))({conf, orm});
         });
     });
 
-    await server.listen(conf.get('port')).catch(errorHandler.throwError);
+    await server.listen(conf.get('port'));
     console.log(`WS server listening ${conf.get('port')} port`);
 })();

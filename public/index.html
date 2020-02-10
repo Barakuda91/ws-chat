@@ -9,7 +9,8 @@
 <button onclick="openConversations()">получит список диалогов vvvvvv</button><br />
 <button onclick="loadConversations()">догрузка диалогов</button><br />
 <button onclick="openConverstion()">открытие диалога</button><br />
-<button onclick="sendMessage()">отправка сообщения</button><br />
+<button onclick="sendMessageRecipient()">отправка сообщения Recipient</button><br />
+<button onclick="sendMessageSender()">отправка сообщения Sender</button><br />
 <button onclick="editMessage()">изменить сообщение</button><br />
 <button onclick="readConverstion()">прочесть диалог</button><br />
 <button onclick="addConverstion()">создание нового диалога</button>
@@ -64,7 +65,15 @@
             messageFromId: 0 // [option, default: last]: id сообщения с которого следует прислать  messagesCount
         }
     });
-    const sendMessage = () => socket.msg({
+    const sendMessageSender = () => socket.msg({
+        type: 'sendMessage',
+        data: {
+            dialogId: 5, // id диалога
+            tempId: Date.now(), // временный id по которому происходит синхронизация
+            message: 'New test in 5 dialog' // Текст сообщения
+        }
+    });
+    const sendMessageRecipient = () => socket.msg({
         type: 'sendMessage',
         data: {
             dialogId: 5, // id диалога
