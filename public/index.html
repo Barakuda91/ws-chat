@@ -68,9 +68,9 @@
     const sendMessageSender = () => socket.msg({
         type: 'sendMessage',
         data: {
-            dialogId: 5, // id диалога
+            dialogId: 4, // id диалога
             tempId: Date.now(), // временный id по которому происходит синхронизация
-            message: 'New test in 5 dialog' // Текст сообщения
+            message: 'New test in 4 dialog' // Текст сообщения
         }
     });
     const sendMessageRecipient = () => socket.msg({
@@ -100,7 +100,7 @@
         type: 'addConverstion',
         data: {
             id: 2, // id пользователя который инициирует создание
-            interlocutorId: 12   //id собеседника с которым пытаемся инициировать диалог
+            interlocutorId: 12 //id собеседника с которым пытаемся инициировать диалог
         }
     });
 </script>

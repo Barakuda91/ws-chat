@@ -1,8 +1,8 @@
 {
   "orm": {
-    "database": "",
-    "username": "",
-    "password": "",
+    "database": "testDB",
+    "username": "root",
+    "password": "199112",
     "options": {
       "dialect": "mysql"
     },

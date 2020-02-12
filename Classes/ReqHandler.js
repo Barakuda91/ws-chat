@@ -43,38 +43,39 @@ module.exports = class ReqHandler {
     }
 
     async sendMessage (msg, ws) {
-        const message = await this.orm.messages.insert({
-            user_id: ws.user.id,
-            dialog_id: msg.data.dialogId,
-            text: msg.data.message,
-            updated_text: msg.data.message
-        }).catch(errorHandler.sendError);
-
         const dialog = await this.orm.dialogs
             .findOne({where: {id: msg.data.dialogId}})
             .catch(errorHandler.sendError);
+        let message;
+        if (dialog.dataValues.recipient_id === ws.user.id || dialog.dataValues.sender_id === ws.user.id) {
+            message = await this.orm.messages.insert({
+                user_id: ws.user.id,
+                dialog_id: msg.data.dialogId,
+                text: msg.data.message,
+                updated_text: msg.data.message
+            }).catch(errorHandler.sendError);
 
-        const partnerId = dialog.dataValues.sender_id === ws.user.id
-            ? dialog.dataValues.recipient_id
-            : dialog.dataValues.sender_id;
+            const partnerId = dialog.dataValues.sender_id === ws.user.id
+                ? dialog.dataValues.recipient_id
+                : dialog.dataValues.sender_id;
 
-        if (!dialog.error && !message.error && online[partnerId]) {
-            for(const recipient of online[partnerId]) {
-                recipient.send({type: 'newMessage', data: {
-                        dialogId: message.dataValues.dialog_id,
-                        id: message.dataValues.id,
-                        interlocutorAvatar: this.getAvatarUrl(ws.user.username),
-                        interlocutorId: ws.user.id,
-                        interlocutor: ws.user.username,
-                        timestamp: message.dataValues.createdAt,
-                        message: message.dataValues.text
-                    }});
-            }
-        }
+            if (!dialog.error && !message.error && online[partnerId]) {
+                for(const recipient of online[partnerId]) {
+                    recipient.send({type: 'newMessage', data: {
+                            dialogId: message.dataValues.dialog_id,
+                            id: message.dataValues.id,
+                            interlocutorAvatar: this.getAvatarUrl(ws.user.username),
+                            interlocutorId: ws.user.id,
+                            interlocutor: ws.user.username,
+                            timestamp: message.dataValues.createdAt,
+                            message: message.dataValues.text
+                        }});
+                }
+                msg.data = {tempId: msg.data.tempId, id: message.dataValues.id};
+            } else msg.data.error = dialog.error || message.error;
+        } else msg.data.error = 'You are not in this dialog';
 
-        return dialog.error || message.error
-            ? {dialog, message}
-            : {type: 'sendMessage', data: {tempId: msg.data.tempId, id: message.dataValues.id}};
+        return msg;
     }
 
     async editMessage (msg, ws) {
@@ -101,13 +102,17 @@ module.exports = class ReqHandler {
     }
 
     async addConverstion (msg, ws) {
-        const dialog = await this.orm.dialogs.insert({
-            sender_id: ws.user.id,
-            recipient_id: msg.data.interlocutorId
-        }).catch(errorHandler.sendError);
+        const user = await this.orm.users
+            .findOne({where: {id: msg.data.interlocutorId}})
+            .catch(errorHandler.sendError);
+        if (user) {
+            const dialog = await this.orm.dialogs.insert({
+                sender_id: ws.user.id,
+                recipient_id: msg.data.interlocutorId
+            }).catch(errorHandler.sendError);
 
-        msg.data = dialog.error ? Object.assign(msg.data, dialog) : {dialogId: dialog.dataValues.id};
-
+            msg.data = dialog.error ? Object.assign(msg.data, dialog) : {dialogId: dialog.dataValues.id};
+        } else msg.data.error = 'You cannot create a dialog with a non-existent user';
         return msg;
     }
 
