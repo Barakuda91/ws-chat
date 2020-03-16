@@ -1,5 +1,5 @@
 online = {};
-Object.assign(global, {ROOT_DIR: __dirname});
+Object.assign(global, {ROOT_DIR: __dirname, ERRORS: require('./Errors')});
 const conf = require('nconf');
 const uuidv1 = require('uuid/v1');
 const fs = require('fs');

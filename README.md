@@ -25,4 +25,9 @@ pm2 stop index
 ```
 pm2 reload index
 ```
+### Response error codes
+```
+1001 - error in sql query
+1002 - dialog not found
+```
 

@@ -6,102 +6,186 @@
 </head>
 <body>
 <h1>Заголовок</h1>
-<button onclick="openConversations()">получит список диалогов vvvvvv</button><br />
-<button onclick="loadConversations()">догрузка диалогов</button><br />
-<button onclick="openConverstion()">открытие диалога</button><br />
-<button onclick="sendMessageRecipient()">отправка сообщения Recipient</button><br />
-<button onclick="sendMessageSender()">отправка сообщения Sender</button><br />
-<button onclick="editMessage()">изменить сообщение</button><br />
-<button onclick="readConverstion()">прочесть диалог</button><br />
-<button onclick="addConverstion()">создание нового диалога</button>
+<table>
+    <tr>
+    <td onclick="openConversations()">получит список диалогов</td>
+    <td onclick="openConversationsError()">получит список диалогов [ERROR]</td>
+    </tr><tr>
+    <td onclick="loadConversations()">догрузка диалогов</td>
+    <td onclick="loadConversationsError()">догрузка диалогов [ERROR]</td>
+    </tr><tr>
+
+    <td onclick="openConverstion()">открытие диалога</td>
+    <td onclick="openConverstionError()">открытие диалога [ERROR]</td>
+    </tr><tr>
+
+    <td onclick="sendMessage()">отправка сообщения</td>
+    <td onclick="sendMessageError()">отправка сообщения [ERROR]</td>
+    </tr><tr>
+
+    <td onclick="editMessage()">изменить сообщение</td>
+    <td onclick="editMessageError()">изменить сообщение [ERROR]</td>
+    </tr><tr>
+
+    <td onclick="readConverstion()">прочесть диалог</td>
+    <td onclick="readConverstionError()">прочесть диалог [ERROR]</td>
+    </tr><tr>
+    <td onclick="addConverstion()">создание нового диалога</td>
+    <td onclick="addConverstionError()">создание нового диалога [ERROR]</td>
+    </tr>
+</table>
+<link rel="stylesheet" href="main.css">
+<script src="WebSocketClient.js"></script>
 </body>
 <script>
-    const socket = new WebSocket("ws://localhost:8080");
+    const wsc = new WebSocketClient({});
 
-    socket.onopen = () => {
-        console.log("Соединение установлено.");
-    };
+    (async () => {
+        await wsc.open('ws://localhost:8080');
+        // wsc.send(JSON.stringify({type: 'fuck', data: 'none'}));
+    })();
 
-    socket.onclose = (event) => {
-        // тут следует реализовать механизм реконнектов
-        event.wasClean
-            ? console.log('Соединение закрыто чисто')
-            : console.log('Обрыв соединения');
-        console.log('Код: ' + event.code + ' причина: ' + event.reason);
-    };
-
-    socket.onmessage = (event) => {
-        console.log("Получены данные ",  JSON.parse(event.data));
-    };
-
-    socket.onerror = (error) => {
-        // тут следует реализовать проверку и обработку ошибок
-        console.log("Ошибка " + error.message);
-    };
-
-    socket.msg = (obj) => socket.send(JSON.stringify(obj));
-
-    const openConversations = () => socket.msg({
+    const openConversations = () => wsc.send({
         type: 'openConversations',
-        data: {
-            userId: 1, // уникальный id пользователя, который запрашивает диалоги
-            dialogsCount: 20 //количество ожидаемых объектов
-        }
+        data: {dialogsCount: 20},
+        done: (data) => console.log('openConversations get data', data),
+        success: (data) => console.log('openConversations send success', data),
+        fail: (error, data) => console.log('openConversations error ', error, data)
     });
-    const loadConversations = () => socket.msg({
+
+    const openConversationsError = () => wsc.send({
+        type: 'openConversations',
+        data: { dialogsCount: '; find * from users;' },
+        done: (data) => console.log('openConversationsError get data', data),
+        success: (data) => console.log('openConversationsError send success', data),
+        fail: (error, data) => console.log('openConversationsError error', error, data)
+    });
+
+    const loadConversations = () => wsc.send({
         type: 'loadConversations',
         data: {
-            userId: 1, // уникальный id пользователя, который запрашивает диалоги
-            dialogsCount: 20, // количество ожидаемых объектов
+            dialogsCount: 10, // количество ожидаемых объектов
             dialogsFrom: 20 // id диалога с которого следует прислать  dialogsCount диалогов
-        }
+        },
+        done: (data) => console.log('loadConversations send success', data),
+        success: (data) => console.log('loadConversations get data', data),
+        fail: (error, data) => console.log('loadConversations error ', error, data)
     });
-    const openConverstion = () => socket.msg({
+
+    const loadConversationsError = () => wsc.send({
+        type: 'loadConversations',
+        data: {
+            dialogsCount: '; find * from users;', // количество ожидаемых объектов
+            dialogsFrom: '; find * from users;' // id диалога с которого следует прислать  dialogsCount диалогов
+        },
+        done: (data) => console.log('loadConversationsError send success', data),
+        success: (data) => console.log('loadConversationsError get data', data),
+        fail: (error, data) => console.log('loadConversationsError error ', error, data)
+    });
+
+    const openConverstion = () => wsc.send({
         type: 'openConverstion',
         data: {
             dialogId: 1, // id диалога
-            userId: 1, // id пользователя который запрашивает диалог
             messagesCount: 20, // количество последних ожидаемых сообщений
             messageFromId: 0 // [option, default: last]: id сообщения с которого следует прислать  messagesCount
-        }
+        },
+        done: (data) => console.log('openConverstion get data', data),
+        success: (data) => console.log('openConverstion send success', data),
+        fail: (error, data) => console.log('openConverstion error ', error, data)
     });
-    const sendMessageSender = () => socket.msg({
+
+    const openConverstionError = () => wsc.send({
+        type: 'openConverstion',
+        data: {
+            dialogId: '; find * from users;', // id диалога
+            messagesCount: '; find * from users;', // количество последних ожидаемых сообщений
+            messageFromId: '; find * from users;' // [option, default: last]: id сообщения с которого следует прислать  messagesCount
+        },
+        done: (data) => console.log('openConverstionError get data', data),
+        success: (data) => console.log('openConverstionError send success', data),
+        fail: (error, data) => console.log('openConverstionError error ', error, data)
+    });
+
+    const sendMessage = () => wsc.send({
         type: 'sendMessage',
         data: {
             dialogId: 4, // id диалога
             tempId: Date.now(), // временный id по которому происходит синхронизация
-            message: 'New test in 4 dialog' // Текст сообщения
-        }
+            message: 'New test in 4 dialog and some one!' // Текст сообщения,
+        },
+        done: (data) => console.log('sendMessage get data', data),
+        success: (data) => console.log('sendMessage send success', data),
+        fail: (error, data) => console.log('sendMessage error ', error, data)
     });
-    const sendMessageRecipient = () => socket.msg({
+
+    const sendMessageError = () => wsc.send({
         type: 'sendMessage',
         data: {
-            dialogId: 5, // id диалога
+            dialogId: 2, // id диалога
             tempId: Date.now(), // временный id по которому происходит синхронизация
-            message: 'New test in 5 dialog' // Текст сообщения
-        }
+            message: 'New test in error dialog' // Текст сообщения
+        },
+        done: (data) => console.log('sendMessageError get data', data),
+        success: (data) => console.log('sendMessageError send success', data),
+        fail: (error, data) => console.log('sendMessageError error ', error, data)
     });
-    const editMessage = () => socket.msg({
+
+    const editMessage = () => wsc.send({
         type: 'editMessage',
         data: {
-            dialogId: 5, // id диалога
-            id: 23, //id сообщения
+            dialogId: 1, // id диалога
+            id: 4, //id сообщения
             newMessage: 'new text second'// новый текст сообщения
-        }
+        },
+        done: (data) => console.log('editMessage get data', data),
+        success: (data) => console.log('editMessage send success', data),
+        fail: (error, data) => console.log('editMessage error ', error, data)
     });
-    const readConverstion = () => socket.msg({
-        type: 'readConverstion',
+
+    const editMessageError = () => wsc.send({
+        type: 'editMessage',
         data: {
             dialogId: 1, // id диалога
-            id: 2, //id сообщения
-        }
+            id: 3, // id сообщения
+            newMessage: 'new text second'// новый текст сообщения
+        },
+        done: (data) => console.log('editMessageError get data', data),
+        success: (data) => console.log('editMessageError send success', data),
+        fail: (error, data) => console.log('editMessageError error ', error, data)
     });
-    const addConverstion = () => socket.msg({
+
+    const readConverstion = () => wsc.send({
+        type: 'readConverstion',
+        data: {dialogId: 1},
+        done: (data) => console.log('openConverstion get data', data),
+        success: (data) => console.log('openConverstion send success', data),
+        fail: (error, data) => console.log('openConverstion error ', error, data)
+    });
+
+    const readConverstionError = () => wsc.send({
+        type: 'readConverstion',
+        data: {dialogId: 1599 },
+        done: (data) => console.log('readConverstionError get data', data),
+        success: (data) => console.log('readConverstionError send success', data),
+        fail: (error, data) => console.log('readConverstionError error ', error, data)
+    });
+
+    const addConverstion = () => wsc.send({
         type: 'addConverstion',
-        data: {
-            id: 2, // id пользователя который инициирует создание
-            interlocutorId: 12 //id собеседника с которым пытаемся инициировать диалог
-        }
+        data: {interlocutorId: 12},
+        done: (data) => console.log('addConverstion get data', data),
+        success: (data) => console.log('addConverstion send success', data),
+        fail: (error, data) => console.log('addConverstion error ', error, data)
     });
+
+    const addConverstionError = () => wsc.send({
+        type: 'addConverstion',
+        data: {interlocutorId: 2},
+        done: (data) => console.log('addConverstionError get data', data),
+        success: (data) => console.log('addConverstionError send success', data),
+        fail: (error, data) => console.log('addConverstionError error ', error, data)
+    });
+
 </script>
 </html>

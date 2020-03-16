@@ -1,0 +1,4 @@
+{
+  "reconnectTimeout": 1500,
+  "reconnectAttempts": 15
+}

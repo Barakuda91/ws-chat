@@ -1,0 +1,12 @@
+{
+  "1001": {"code": 1001, "message": "error in sql query"},
+  "1002": {"code": 1002, "message": "dialogue not found"},
+  "1003": {"code": 1003, "message": "you are not in this dialog"},
+  "1004": {"code": 1004, "message": "message not found"},
+  "1005": {"code": 1005, "message": "dialogue or message not found"},
+  "1006": {"code": 1006, "message": "you cannot create a dialogue with yourself"},
+  "1007": {"code": 1007, "message": "you cannot create dialogue with this user"},
+  "1008": {"code": 1008, "message": "user not found"},
+  "1009": {"code": 1009, "message": "dialogue already created"},
+  "1010": {"code": 1010, "message": "message too short"}
+}

@@ -14,5 +14,7 @@
     "key": "path to key"
   },
   "port": 8080,
-  "authPath": "https://site.com/check-auth.php"
+  "authPath": "https://site.com/check-auth.php",
+  "messageLength": 10,
+  "minMessageLength": 1
 }

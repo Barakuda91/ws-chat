@@ -1,10 +1,11 @@
+const Common = require(`${ROOT_DIR}/Classes/Common`);
 const fs = require('fs-extra');
 const { Sequelize } = require('sequelize');
 const errorHandler = new (require(`${ROOT_DIR}/Classes/ErrorHandler`))({name: 'ORM'});
 
-module.exports = class Orm {
+module.exports = class Orm extends Common  {
     constructor(struct) {
-        Object.assign(this, struct);
+        super(struct);
         const ormConf = this.conf.get('orm');
         this.sequelize = new Sequelize(ormConf.database, ormConf.username, ormConf.password, ormConf.options);
     }
